@@ -4,15 +4,19 @@ import (
 	"go-playground/top-down-di/api/models"
 	"os"
 
+	"sync"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
+var once sync.Once
 
 func ConnectDB() error {
-
-	// DB_URL 환경 변수 값 조회
+	// 싱글톤 방식
+	once.Do(func() {
+		// DB_URL 환경 변수 값 조회
 	dbURL := os.Getenv("DB_URL")
 	
 	// DB_URL 이 없는 경우 예외처리 및 초기값 할당
@@ -30,7 +34,8 @@ func ConnectDB() error {
 	pgConn.Migrator().AutoMigrate(&models.Book{})
 
 	db = pgConn
-	
+	})
+
 	return nil
 }
 
